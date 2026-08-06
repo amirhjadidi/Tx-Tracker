@@ -2,6 +2,10 @@ import pandas as pd
 import csv
 from datetime import datetime
 from data_entry import get_date, get_amount, get_category, get_description
+import matplotlib
+
+matplotlib.use("TkAgg")
+import matplotlib.pyplot as plt
 
 
 class CSV:
@@ -84,7 +88,36 @@ def add():
     CSV.add_entry(date, amount, category, description)
 
 
-# CSV.get_transactions("20-1-2025", "20-1-2027")
+def plot_transactions(df):
+    df.set_index("date", inplace=True)
+
+    income_df = (
+        df[df["category"] == "Income"]["amount"]
+        .resample("D")
+        .sum()
+        .reindex(df.index, fill_value=0)
+    )
+
+    expense_df = (
+        df[df["category"] == "Expense"]["amount"]
+        .resample("D")
+        .sum()
+        .reindex(df.index, fill_value=0)
+    )
+
+    plt.figure(figsize=(10, 5))
+    plt.plot(
+        income_df.index, income_df, label="Income", color="g"
+    )  # income_df is now a Series
+    plt.plot(
+        expense_df.index, expense_df, label="Expense", color="r"
+    )  # expense_df is now a Series
+    plt.xlabel("Date")
+    plt.ylabel("Amount")
+    plt.title("Transactions summary")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
 
 
 def main():
@@ -102,7 +135,9 @@ def main():
 
             end_date = get_date("Enter the end date: ")
 
-            CSV.get_transactions(start_date, end_date)
+            df = CSV.get_transactions(start_date, end_date)
+            if input("do you want to see a plot? (y/n)".lower()) == "y":
+                plot_transactions(df=df)
             print("*" * 50)
         elif choice == "3":
             print("Exiting...")
