@@ -34,7 +34,11 @@ class CSV:
 
     @classmethod
     def get_transactions(cls, start_date, end_date):
-        data = pd.read_csv(cls.CSV_FILE)
+        try:
+            data = pd.read_csv(cls.CSV_FILE)
+        except FileNotFoundError:
+            print(f"file {cls.CSV_FILE} not found. please add transactions first!")
+            return pd.DataFrame()
         # print(data)
         data["date"] = pd.to_datetime(data["date"], format=cls.FORMAT)
         # print(data["date"])
@@ -80,13 +84,32 @@ def add():
     CSV.add_entry(date, amount, category, description)
 
 
-CSV.get_transactions("20-1-2025", "20-1-2027")
+# CSV.get_transactions("20-1-2025", "20-1-2027")
 
-# if __name__ == "__main__":
-#     while True:
 
-#         add()
-#         print("-" * 20)
-#         another = input("Add another entry? (y/n): ").lower()
-#         if another != "y":
-#             break
+def main():
+    while True:
+        print("\n1. Add new Transaction")
+        print("2. view transactions summary within a date range")
+        print("3. Exit")
+        choice = input("Enter your choice (1-3): ")
+
+        if choice == "1":
+            add()
+            print("*" * 50)
+        elif choice == "2":
+            start_date = get_date("Enter the start date: ")
+
+            end_date = get_date("Enter the end date: ")
+
+            CSV.get_transactions(start_date, end_date)
+            print("*" * 50)
+        elif choice == "3":
+            print("Exiting...")
+            break
+        else:
+            print("invalid choice")
+
+
+if __name__ == "__main__":
+    main()
